@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RU Metadata Schema",
+  "description": "Metadata schema for Reproducible Units (image restoration)",
+  "type": "object",
+  "required": ["name", "version", "task", "model", "weights", "input", "output"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Model/RU name"
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "default": "1.0.0"
+    },
+    "task": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "denoising",
+            "super_resolution",
+            "deblurring",
+            "inpainting",
+            "jpeg_artifact_removal",
+            "face_restoration",
+            "colorization",
+            "hdr",
+            "low_light_enhancement"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "variants": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "scale": { "type": "integer", "enum": [2, 4, 8] },
+            "supported_scales": { "type": "array", "items": { "type": "integer" } },
+            "noise_level": {
+              "oneOf": [
+                { "type": "integer" },
+                { "type": "array", "items": { "type": "integer" } }
+              ]
+            },
+            "mask_required": { "type": "boolean" },
+            "mask_format": { "type": "string", "enum": ["binary", "grayscale"] }
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["single", "multi_network", "diffusion"]
+        },
+        "architecture": { "type": "string" },
+        "framework": {
+          "type": "string",
+          "enum": ["pytorch", "tensorflow", "jax"],
+          "default": "pytorch"
+        },
+        "networks": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "class": { "type": "string" }
+                }
+              }
+            ]
+          }
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "num_steps": { "type": "integer" },
+            "sampler": { "type": "string", "enum": ["DDPM", "DDIM", "DPM"] },
+            "guidance_scale": { "type": "number" }
+          }
+        }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "required": ["default"],
+      "properties": {
+        "default": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ]
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string", "format": "uri" },
+              "sha256": { "type": "string" },
+              "description": { "type": "string" },
+              "config": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "channels": { "type": "integer", "enum": [1, 3, 4] },
+        "color_space": { "type": "string", "enum": ["RGB", "BGR", "L", "RGBA"] },
+        "value_range": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "dtype": { "type": "string", "enum": ["float32", "float16", "uint8"] },
+        "pad_multiple": { "type": "integer" },
+        "image": { "$ref": "#/properties/input" },
+        "mask": {
+          "type": "object",
+          "properties": {
+            "channels": { "type": "integer" },
+            "value_range": { "type": "array" },
+            "description": { "type": "string" }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "channels": { "type": "integer" },
+        "color_space": { "type": "string" },
+        "value_range": { "type": "array" },
+        "dtype": { "type": "string" },
+        "scale_factor": { "type": "integer", "default": 1 }
+      }
+    },
+    "inference": {
+      "type": "object",
+      "properties": {
+        "device": { "type": "string", "enum": ["cpu", "cuda", "mps"], "default": "cpu" },
+        "tile_size": { "oneOf": [{ "type": "integer" }, { "type": "null" }] },
+        "tile_overlap": { "type": "integer", "default": 32 },
+        "batch_size": { "type": "integer", "default": 1 },
+        "fp16": { "type": "boolean", "default": false },
+        "deterministic": { "type": "boolean", "default": true },
+        "seed": { "type": "integer" },
+        "num_steps": { "type": "integer" },
+        "sampler": { "type": "string" },
+        "guidance_scale": { "type": "number" },
+        "eta": { "type": "number" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "repo": { "type": "string", "format": "uri" },
+        "paper": { "type": "string" },
+        "license": { "type": "string" }
+      }
+    }
+  }
+}
