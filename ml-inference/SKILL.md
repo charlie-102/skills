@@ -93,8 +93,9 @@ class Adapter:
 
 ## Reference
 
-Full documentation in `zoo/docs/`:
+Full documentation:
 - RU_SPEC.md - Full specification
 - METADATA_SCHEMA.md - metadata.json schema
 - COMMON_PATTERNS.md - Repository patterns
 - WORKFLOW.md - Detailed workflow
+- TROUBLESHOOTING.md - Common issues and solutions
